@@ -59290,9 +59290,11 @@ var Akedo2Chain = /** @class */ (function () {
         this.connectWallet = function () {
             return new Promise(function (resolve, reject) {
                 _this.tonconnectUi.openModal().then(function () {
+                    console.log("connect sucess");
                     return resolve(_this.getWalletAddress());
                 })
                     .catch(function (err) {
+                    console.log("connect err", err);
                     return reject(err);
                 });
             });
