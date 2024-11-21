@@ -59288,7 +59288,14 @@ var Akedo2Chain = /** @class */ (function () {
     function Akedo2Chain(manifestUrl) {
         var _this = this;
         this.connectWallet = function () {
-            _this.tonconnectUi.openModal();
+            return new Promise(function (resolve, reject) {
+                _this.tonconnectUi.openModal().then(function () {
+                    return resolve(_this.getWalletAddress());
+                })
+                    .catch(function (err) {
+                    return reject(err);
+                });
+            });
         };
         this.disconnectWallet = function () {
             if (!_this.tonconnectUi.connected) {
