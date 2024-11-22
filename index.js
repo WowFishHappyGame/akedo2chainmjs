@@ -59287,17 +59287,21 @@ var TonWeb$1 = /*@__PURE__*/getDefaultExportFromCjs(src);
 var Akedo2Chain = /** @class */ (function () {
     function Akedo2Chain(manifestUrl) {
         var _this = this;
-        this.connectWallet = function () {
-            return new Promise(function (resolve, reject) {
-                _this.tonconnectUi.openModal().then(function () {
-                    console.log("connect sucess");
-                    return resolve(_this.getWalletAddress());
-                })
-                    .catch(function (err) {
-                    console.log("connect err", err);
-                    return reject(err);
-                });
+        this.init = function (onConnect, onError) {
+            _this.tonconnectUi.onStatusChange(function (wallet) {
+                if (!wallet) {
+                    onConnect("");
+                    return;
+                }
+                onConnect(_this.getWalletAddress());
+            }, function (err) {
+                if (onError) {
+                    onError(err.message);
+                }
             });
+        };
+        this.connectWallet = function () {
+            _this.tonconnectUi.openModal();
         };
         this.disconnectWallet = function () {
             if (!_this.tonconnectUi.connected) {
@@ -59312,6 +59316,7 @@ var Akedo2Chain = /** @class */ (function () {
         };
         this.getWalletAddress = function () {
             if (!_this.tonconnectUi.connected) {
+                console.log("tonconnectUi not connected");
                 return "";
             }
             var address = new TonWeb$1.utils.Address(_this.tonconnectUi.account.address);
@@ -59348,12 +59353,6 @@ var Akedo2Chain = /** @class */ (function () {
                                     _d)
                             ],
                                 _c);
-                            if (!!this.tonconnectUi.connected) return [3 /*break*/, 3];
-                            return [4 /*yield*/, this.connectWallet()];
-                        case 2:
-                            _e.sent();
-                            _e.label = 3;
-                        case 3:
                             this.tonconnectUi.sendTransaction(transaction).then(function (response) { return __awaiter$1(_this, void 0, void 0, function () {
                                 var cell, retStr, _a, _b;
                                 return __generator(this, function (_d) {
