@@ -43240,47 +43240,54 @@ var coerce$1 = function coerce(version, options) {
 };
 var coerce_1 = coerce$1;
 
-var LRUCache = /*#__PURE__*/function () {
-  function LRUCache() {
-    _classCallCheck(this, LRUCache);
-    this.max = 1000;
-    this.map = new Map();
-  }
-  return _createClass(LRUCache, [{
-    key: "get",
-    value: function get(key) {
-      var value = this.map.get(key);
-      if (value === undefined) {
-        return undefined;
-      } else {
-        // Remove the key from the map and add it to the end
-        this.map["delete"](key);
-        this.map.set(key, value);
-        return value;
-      }
+var lrucache;
+var hasRequiredLrucache;
+function requireLrucache() {
+  if (hasRequiredLrucache) return lrucache;
+  hasRequiredLrucache = 1;
+  var LRUCache = /*#__PURE__*/function () {
+    function LRUCache() {
+      _classCallCheck(this, LRUCache);
+      this.max = 1000;
+      this.map = new Map();
     }
-  }, {
-    key: "delete",
-    value: function _delete(key) {
-      return this.map["delete"](key);
-    }
-  }, {
-    key: "set",
-    value: function set(key, value) {
-      var deleted = this["delete"](key);
-      if (!deleted && value !== undefined) {
-        // If cache is full, delete the least recently used item
-        if (this.map.size >= this.max) {
-          var firstKey = this.map.keys().next().value;
-          this["delete"](firstKey);
+    return _createClass(LRUCache, [{
+      key: "get",
+      value: function get(key) {
+        var value = this.map.get(key);
+        if (value === undefined) {
+          return undefined;
+        } else {
+          // Remove the key from the map and add it to the end
+          this.map["delete"](key);
+          this.map.set(key, value);
+          return value;
         }
-        this.map.set(key, value);
       }
-      return this;
-    }
-  }]);
-}();
-var lrucache = LRUCache;
+    }, {
+      key: "delete",
+      value: function _delete(key) {
+        return this.map["delete"](key);
+      }
+    }, {
+      key: "set",
+      value: function set(key, value) {
+        var deleted = this["delete"](key);
+        if (!deleted && value !== undefined) {
+          // If cache is full, delete the least recently used item
+          if (this.map.size >= this.max) {
+            var firstKey = this.map.keys().next().value;
+            this["delete"](firstKey);
+          }
+          this.map.set(key, value);
+        }
+        return this;
+      }
+    }]);
+  }();
+  lrucache = LRUCache;
+  return lrucache;
+}
 
 var range$2;
 var hasRequiredRange;
@@ -43513,7 +43520,7 @@ function requireRange() {
     }]);
   }();
   range$2 = Range;
-  var LRU = lrucache;
+  var LRU = requireLrucache();
   var cache = new LRU();
   var parseOptions = parseOptions_1;
   var Comparator = requireComparator();
@@ -59310,7 +59317,7 @@ var Akedo2Chain = /** @class */ (function () {
             _this.tonconnectUi.openModal();
         };
         this.disconnectWallet = function () {
-            if (!_this.tonconnectUi.connected) {
+            if (_this.tonconnectUi.connected) {
                 _this.tonconnectUi.disconnect();
             }
         };
