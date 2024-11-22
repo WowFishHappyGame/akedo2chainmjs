@@ -59288,15 +59288,19 @@ var Akedo2Chain = /** @class */ (function () {
     function Akedo2Chain(manifestUrl) {
         var _this = this;
         this.init = function (onConnect, onError) {
+            _this.onConnect = onConnect;
+            _this.onConnectErr = onError;
             _this.tonconnectUi.onStatusChange(function (wallet) {
-                if (!wallet) {
-                    onConnect("");
-                    return;
+                if (_this.onConnect) {
+                    if (!wallet) {
+                        _this.onConnect("");
+                        return;
+                    }
+                    _this.onConnect(_this.getWalletAddress());
                 }
-                onConnect(_this.getWalletAddress());
             }, function (err) {
-                if (onError) {
-                    onError(err.message);
+                if (_this.onConnectErr) {
+                    _this.onConnectErr(err.message);
                 }
             });
         };
@@ -59382,6 +59386,8 @@ var Akedo2Chain = /** @class */ (function () {
                 });
             }); });
         };
+        this.onConnect = undefined;
+        this.onConnectErr = undefined;
         this.tonconnectUi = new TonConnectUI({
             manifestUrl: manifestUrl
         });
