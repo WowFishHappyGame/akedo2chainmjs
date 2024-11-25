@@ -59299,7 +59299,7 @@ var Akedo2Chain = /** @class */ (function () {
                     notifications: ['before', 'success', 'error']
                 }
             };
-            console.log("init callback", onConnect, onError, _this.onConnect, _this.onConnectErr);
+            console.log("init callback", manifestUrl, onConnect, onError);
             _this.tonconnectUi.onStatusChange(function (wallet) {
                 console.log("connect callback", _this.onConnect);
                 if (_this.onConnect) {
