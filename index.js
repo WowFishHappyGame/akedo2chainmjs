@@ -43240,54 +43240,47 @@ var coerce$1 = function coerce(version, options) {
 };
 var coerce_1 = coerce$1;
 
-var lrucache;
-var hasRequiredLrucache;
-function requireLrucache() {
-  if (hasRequiredLrucache) return lrucache;
-  hasRequiredLrucache = 1;
-  var LRUCache = /*#__PURE__*/function () {
-    function LRUCache() {
-      _classCallCheck(this, LRUCache);
-      this.max = 1000;
-      this.map = new Map();
+var LRUCache = /*#__PURE__*/function () {
+  function LRUCache() {
+    _classCallCheck(this, LRUCache);
+    this.max = 1000;
+    this.map = new Map();
+  }
+  return _createClass(LRUCache, [{
+    key: "get",
+    value: function get(key) {
+      var value = this.map.get(key);
+      if (value === undefined) {
+        return undefined;
+      } else {
+        // Remove the key from the map and add it to the end
+        this.map["delete"](key);
+        this.map.set(key, value);
+        return value;
+      }
     }
-    return _createClass(LRUCache, [{
-      key: "get",
-      value: function get(key) {
-        var value = this.map.get(key);
-        if (value === undefined) {
-          return undefined;
-        } else {
-          // Remove the key from the map and add it to the end
-          this.map["delete"](key);
-          this.map.set(key, value);
-          return value;
+  }, {
+    key: "delete",
+    value: function _delete(key) {
+      return this.map["delete"](key);
+    }
+  }, {
+    key: "set",
+    value: function set(key, value) {
+      var deleted = this["delete"](key);
+      if (!deleted && value !== undefined) {
+        // If cache is full, delete the least recently used item
+        if (this.map.size >= this.max) {
+          var firstKey = this.map.keys().next().value;
+          this["delete"](firstKey);
         }
+        this.map.set(key, value);
       }
-    }, {
-      key: "delete",
-      value: function _delete(key) {
-        return this.map["delete"](key);
-      }
-    }, {
-      key: "set",
-      value: function set(key, value) {
-        var deleted = this["delete"](key);
-        if (!deleted && value !== undefined) {
-          // If cache is full, delete the least recently used item
-          if (this.map.size >= this.max) {
-            var firstKey = this.map.keys().next().value;
-            this["delete"](firstKey);
-          }
-          this.map.set(key, value);
-        }
-        return this;
-      }
-    }]);
-  }();
-  lrucache = LRUCache;
-  return lrucache;
-}
+      return this;
+    }
+  }]);
+}();
+var lrucache = LRUCache;
 
 var range$2;
 var hasRequiredRange;
@@ -43520,7 +43513,7 @@ function requireRange() {
     }]);
   }();
   range$2 = Range;
-  var LRU = requireLrucache();
+  var LRU = lrucache;
   var cache = new LRU();
   var parseOptions = parseOptions_1;
   var Comparator = requireComparator();
@@ -59292,11 +59285,20 @@ var src = TonWeb;
 var TonWeb$1 = /*@__PURE__*/getDefaultExportFromCjs(src);
 
 var Akedo2Chain = /** @class */ (function () {
-    function Akedo2Chain(manifestUrl) {
+    function Akedo2Chain() {
         var _this = this;
-        this.init = function (onConnect, onError) {
+        this.init = function (manifestUrl, onConnect, onError) {
             _this.onConnect = onConnect;
             _this.onConnectErr = onError;
+            _this.tonconnectUi = new TonConnectUI({
+                manifestUrl: manifestUrl
+            });
+            _this.tonconnectUi.uiOptions = {
+                actionsConfiguration: {
+                    modals: ['before', 'error'],
+                    notifications: ['before', 'success', 'error']
+                }
+            };
             console.log("init callback", onConnect, onError, _this.onConnect, _this.onConnectErr);
             _this.tonconnectUi.onStatusChange(function (wallet) {
                 console.log("connect callback", _this.onConnect);
@@ -59314,10 +59316,12 @@ var Akedo2Chain = /** @class */ (function () {
             });
         };
         this.connectWallet = function () {
-            _this.tonconnectUi.openModal();
+            var _a;
+            (_a = _this.tonconnectUi) === null || _a === void 0 ? void 0 : _a.openModal();
         };
         this.disconnectWallet = function () {
-            if (_this.tonconnectUi.connected) {
+            var _a;
+            if ((_a = _this.tonconnectUi) === null || _a === void 0 ? void 0 : _a.connected) {
                 _this.tonconnectUi.disconnect();
             }
         };
@@ -59328,7 +59332,8 @@ var Akedo2Chain = /** @class */ (function () {
             return _this.sendtoChain(payto, amount, comment);
         };
         this.getWalletAddress = function () {
-            if (!_this.tonconnectUi.connected) {
+            var _a;
+            if (!((_a = _this.tonconnectUi) === null || _a === void 0 ? void 0 : _a.connected)) {
                 console.log("tonconnectUi not connected");
                 return "";
             }
@@ -59348,8 +59353,9 @@ var Akedo2Chain = /** @class */ (function () {
                 var transaction, _a, _b;
                 var _c, _d;
                 var _this = this;
-                return __generator(this, function (_e) {
-                    switch (_e.label) {
+                var _e;
+                return __generator(this, function (_f) {
+                    switch (_f.label) {
                         case 0:
                             _c = {
                                 validUntil: Math.floor(Date.now() / 1000) + 60
@@ -59362,11 +59368,11 @@ var Akedo2Chain = /** @class */ (function () {
                             return [4 /*yield*/, payloadCell.toBoc()];
                         case 1:
                             transaction = (_c.messages = [
-                                (_d.payload = _b.apply(_a, [_e.sent()]),
+                                (_d.payload = _b.apply(_a, [_f.sent()]),
                                     _d)
                             ],
                                 _c);
-                            this.tonconnectUi.sendTransaction(transaction).then(function (response) { return __awaiter$1(_this, void 0, void 0, function () {
+                            (_e = this.tonconnectUi) === null || _e === void 0 ? void 0 : _e.sendTransaction(transaction).then(function (response) { return __awaiter$1(_this, void 0, void 0, function () {
                                 var cell, retStr, _a, _b;
                                 return __generator(this, function (_d) {
                                     switch (_d.label) {
@@ -59397,15 +59403,7 @@ var Akedo2Chain = /** @class */ (function () {
         };
         this.onConnect = undefined;
         this.onConnectErr = undefined;
-        this.tonconnectUi = new TonConnectUI({
-            manifestUrl: manifestUrl
-        });
-        this.tonconnectUi.uiOptions = {
-            actionsConfiguration: {
-                modals: ['before', 'error'],
-                notifications: ['before', 'success', 'error']
-            }
-        };
+        this.tonconnectUi = undefined;
     }
     return Akedo2Chain;
 }());
